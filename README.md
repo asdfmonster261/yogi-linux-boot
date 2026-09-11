@@ -7,40 +7,40 @@ ArchLinuxARM aarch64 running off a USB drive on a Pixel 11 Pro Fold, RAM-booted 
 
 | path | what |
 |---|---|
-| `initramfs/linuxboot_init` | PID1. Loads the vendor stack, pets the watchdog, starts aocd for the USB host role, waits for the drive by label, then switch_roots. |
-| `initramfs/mkcpio.py` | Builds the initramfs cpio from a staging tree. |
+| `initramfs/root/linuxboot_init` | PID1. Loads the vendor stack, pets the watchdog, starts aocd for the USB host role, waits for the drive by label, then switch_roots. |
+| `initramfs/root/` | The initramfs staging tree, device binaries included. |
+| `initramfs/mkcpio.py` | Builds the initramfs cpio from that tree. |
 | `kernel/linux_boot_gki.fragment` | The config fragment: rdinit, squashfs, sysrq, USB-Ethernet built in. |
 | `kernel/linux-boot-wiring.patch` | Wires the fragment into `BUILD.bazel` and drops the seven USB-net entries from `modules.bzl`. |
 | `tools/modeset_test.c` | Minimal raw-ioctl DRM modeset, to prove the panel lights from userspace KMS. |
 | `tools/setup-arch.sh` | Prepares the Arch rootfs on the drive: boot report, tty1 autologin, no-suspend, your SSH key. |
 
-Deliberately not here: the kernel source, since this is a patch against ACK `android16-6.12`,
-and every device binary. The initramfs carries Google proprietary firmware and daemons, so it
-is assembled locally from your own device instead of being committed.
+The kernel source is not here; this is a patch against ACK `android16-6.12`.
 
 ## Building the initramfs
 
-`mkcpio.py` expects a staging tree. Everything in it comes off your own device or a Magisk
-release:
-
-```
-root/bin/busybox                    arm64, lib/arm64-v8a/libbusybox.so out of a Magisk apk
-root/linuxboot_init                 from initramfs/ in this repo
-root/modeset_test                   built from tools/modeset_test.c (NDK, -static)
-root/lib/modules/aoc_usb_driver.ko  the device's vendor_dlkm
-root/vendor/firmware/aoc.bin        the device's /vendor/firmware  (~28 MB)
-root/aoc/{linker64,aocd,lib/*.so}   /vendor/bin/aocd, the bionic linker, and the libs that
-                                    /proc/<aocd-pid>/maps lists for it
-```
-
-Then:
+The staging tree is committed, so this is one command:
 
 ```sh
-python3 initramfs/mkcpio.py root linux_boot_initramfs.cpio
+python3 initramfs/mkcpio.py initramfs/root linux_boot_initramfs.cpio
 ```
 
-and drop the result at the root of the kernel tree, which is where
-`CONFIG_INITRAMFS_SOURCE` looks for it.
+Drop the result at the root of the kernel tree, which is where `CONFIG_INITRAMFS_SOURCE`
+looks for it.
+
+The tree carries device binaries, harvested off the phone in September 2026 and kept here so
+this can be picked up again later without re-harvesting them. They are Google's, not ours:
+
+| path | where it came from |
+|---|---|
+| `bin/busybox` | arm64, `lib/arm64-v8a/libbusybox.so` inside a Magisk release apk |
+| `lib/modules/aoc_usb_driver.ko` | the device's vendor_dlkm |
+| `vendor/firmware/aoc.bin` | the device's `/vendor/firmware` |
+| `aoc/linker64`, `aoc/aocd`, `aoc/lib/*.so` | `/vendor/bin/aocd`, the bionic linker, and the libraries `/proc/<aocd-pid>/maps` lists for it |
+| `linuxboot_init`, `modeset_test` | ours; `modeset_test` builds from `tools/modeset_test.c` |
+
+Re-harvesting is only necessary if the device moves to a kernel generation these stop loading
+against.
 
 ## Building the kernel
 

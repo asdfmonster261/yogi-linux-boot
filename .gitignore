@@ -1,6 +1,4 @@
-# staging tree and build output: device binaries, never committed
-root/
+# build output
 *.cpio
 *.cpio.gz
 *.img
-modeset_test
