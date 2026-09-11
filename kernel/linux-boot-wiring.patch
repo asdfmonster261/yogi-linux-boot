@@ -1,0 +1,40 @@
+diff --git a/BUILD.bazel b/BUILD.bazel
+index 2cd166602dfb..fb07a1405f90 100644
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -276,7 +276,7 @@ common_kernel(
+     make_goals = _GKI_AARCH64_MAKE_GOALS,
+     makefile = ":Makefile",
+     module_implicit_outs = get_gki_modules_list("arm64") + get_kunit_modules_list("arm64"),
+-    post_defconfig_fragments = ["arch/arm64/configs/heybooboo_gki.fragment"],
++    post_defconfig_fragments = ["arch/arm64/configs/heybooboo_gki.fragment", "arch/arm64/configs/linux_boot_gki.fragment"],
+     protected_module_names_list = ":gki_aarch64_protected_module_names",
+     system_dlkm_extra_archive_files = [":generate_gki_module_info_arm64"],
+     trim_nonlisted_kmi = True,
+diff --git a/modules.bzl b/modules.bzl
+index 90f2359c7f07..1f1eb383ea03 100644
+--- a/modules.bzl
++++ b/modules.bzl
+@@ -21,7 +21,6 @@ _COMMON_GKI_MODULES_LIST = [
+     "drivers/net/can/slcan/slcan.ko",
+     "drivers/net/can/vcan.ko",
+     "drivers/net/macsec.ko",
+-    "drivers/net/mii.ko",
+     "drivers/net/ppp/bsd_comp.ko",
+     "drivers/net/ppp/ppp_deflate.ko",
+     "drivers/net/ppp/ppp_generic.ko",
+@@ -31,14 +30,8 @@ _COMMON_GKI_MODULES_LIST = [
+     "drivers/net/slip/slhc.ko",
+     "drivers/net/usb/aqc111.ko",
+     "drivers/net/usb/asix.ko",
+-    "drivers/net/usb/ax88179_178a.ko",
+     "drivers/net/usb/cdc_eem.ko",
+-    "drivers/net/usb/cdc_ether.ko",
+-    "drivers/net/usb/cdc_ncm.ko",
+-    "drivers/net/usb/r8152.ko",
+-    "drivers/net/usb/r8153_ecm.ko",
+     "drivers/net/usb/rtl8150.ko",
+-    "drivers/net/usb/usbnet.ko",
+     "drivers/net/wwan/wwan.ko",
+     "drivers/power/sequencing/pwrseq-core.ko",
+     "drivers/pps/pps_core.ko",

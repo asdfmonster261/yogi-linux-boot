@@ -1,0 +1,30 @@
+# linux-boot variant: on-screen text console + framebuffer, for RAM-booting a
+# generic aarch64 Linux (Debian/pmOS/Arch) from USB. Android strips these because
+# it drives DRM directly via SurfaceFlinger; they are enabled only in this variant.
+# This kernel is meant to be fastboot-booted (RAM), never flashed as the daily
+# kernel, so console/fbdev options that would fight Android userspace are safe here.
+# olddefconfig pulls the dependency symbols (FB_CORE, VT_CONSOLE, DRM_CLIENT_LIB).
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_SQUASHFS=y
+CONFIG_SQUASHFS_XZ=y
+CONFIG_MAGIC_SYSRQ=y
+# Option B: do NOT force. Let the bootloader-supplied vendor_kernel_boot ramdisk
+# populate rootfs -- it carries /lib/modules (all vendor .ko + modules.dep, which
+# the kernel decompresses for free), so init can modprobe the watchdog + USB stack
+# at runtime instead of embedding them. Our small built-in initramfs still unpacks
+# (busybox + /linuxboot_init), and rdinit= runs OUR init instead of Android's /init
+# (which the vkb/init_boot ramdisk would otherwise provide and would boot Android).
+CONFIG_INITRAMFS_SOURCE="linux_boot_initramfs.cpio"
+CONFIG_CMDLINE="rdinit=/linuxboot_init log_buf_len=8M ignore_loglevel"
+CONFIG_CMDLINE_EXTEND=y
+# USB-Ethernet host drivers so a dock/dongle NIC gives eth0 (for SSH into Arch)
+CONFIG_USB=y
+CONFIG_NET=y
+CONFIG_USB_NET_DRIVERS=y
+CONFIG_MII=y
+CONFIG_USB_USBNET=y
+CONFIG_USB_NET_CDCETHER=y
+CONFIG_USB_NET_CDC_NCM=y
+CONFIG_USB_NET_AX88179_178A=y
+CONFIG_USB_RTL8152=y

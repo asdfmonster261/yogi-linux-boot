@@ -1,0 +1,6 @@
+# staging tree and build output: device binaries, never committed
+root/
+*.cpio
+*.cpio.gz
+*.img
+modeset_test
